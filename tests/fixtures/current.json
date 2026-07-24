@@ -1,0 +1,106 @@
+{
+  "name": "Sample live API | 100km-Duathlon",
+  "location": "Munich, Germany",
+  "startTime": "2026-07-24T08:00:00+00:00",
+  "endTime": "2026-07-24T16:00:00+00:00",
+  "resultTime": "2026-07-24T16:30:00+00:00",
+  "shadowTrackUrl": "https://racemap.com/shadowtracks/100km-duathlon.geojson",
+  "starters": [
+    {
+      "id": "starter-a",
+      "name": "Alice Anderson",
+      "startNumber": "101",
+      "markerColor": "#ff0000",
+      "tags": {
+        "Age": "34",
+        "Class": "Women",
+        "Status": "OK"
+      },
+      "importId": "import-a-001",
+      "current": {
+        "time": "2026-07-24T09:15:30+00:00",
+        "lat": 48.137154,
+        "lng": 11.576124,
+        "elv": 519.0,
+        "speed": 3.5,
+        "distanceToShadowTrack": 4.2,
+        "speedSt": 3.4,
+        "elvSt": 520.0,
+        "fromStart": 12500.0,
+        "toFinish": 87500.0,
+        "eta": "2026-07-24T15:45:00+00:00",
+        "gapCalcTime": "2026-07-24T09:15:00+00:00",
+        "gapDistance": 120.5,
+        "gap": 42.0,
+        "gapChase": 15.0,
+        "gapAverage": 28.5,
+        "fromStartEx": 12550.0,
+        "toFinishEx": 87450.0,
+        "gapDistanceEx": 121.0,
+        "gapEx": 42.5,
+        "gapChaseEx": 15.2,
+        "gapAverageEx": 28.7
+      },
+      "device": {
+        "externalId": "ext-aaa-111",
+        "battery": 87,
+        "online": true,
+        "isMoving": true,
+        "lastLocationGpsFix": true,
+        "lastLocationAt": "2026-07-24T09:15:30+00:00",
+        "deviceId": "device-aaa-111"
+      }
+    },
+    {
+      "id": "starter-b",
+      "name": "Bob Brown",
+      "startNumber": "102",
+      "markerColor": "#00ff00",
+      "tags": {
+        "Age": "41",
+        "Class": "Men",
+        "Status": "OK"
+      },
+      "importId": "import-b-002",
+      "current": {
+        "time": "2026-07-24T09:14:10+00:00",
+        "lat": 48.135876,
+        "lng": 11.571098,
+        "elv": 515.0,
+        "speed": 2.9,
+        "distanceToShadowTrack": null,
+        "speedSt": 2.8,
+        "elvSt": 514.0,
+        "fromStart": 11800.0,
+        "toFinish": 88200.0,
+        "eta": "2026-07-24T15:58:00+00:00",
+        "gapCalcTime": null,
+        "gapDistance": null,
+        "gap": null,
+        "gapChase": null,
+        "gapAverage": null,
+        "fromStartEx": 11820.0,
+        "toFinishEx": 88180.0,
+        "gapDistanceEx": null,
+        "gapEx": null,
+        "gapChaseEx": null,
+        "gapAverageEx": null
+      },
+      "device": null
+    },
+    {
+      "id": "starter-c",
+      "name": "Carol Clark",
+      "startNumber": "103",
+      "markerColor": "#0000ff",
+      "tags": {
+        "Age": "30",
+        "Class": "Women",
+        "Status": "DSQ"
+      },
+      "importId": "import-c-003",
+      "current": null,
+      "device": null
+    }
+  ]
+}
