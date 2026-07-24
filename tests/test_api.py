@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
+from unittest.mock import AsyncMock, MagicMock
 
+import aiohttp
 import pytest
 from aiohttp import ClientSession
 from aioresponses import aioresponses
@@ -18,6 +21,31 @@ from custom_components.racemap.exceptions import (
 
 EVENT_ID = "evt123"
 URL = f"https://racemap.com/api/data/v1/{EVENT_ID}/current"
+
+
+class RequestContext:
+    """Response context that also supports the previous awaitable request path."""
+
+    def __init__(self, response: MagicMock) -> None:
+        """Store the response and track context-manager cleanup."""
+        self.response = response
+        self.exited = False
+
+    def __await__(self) -> Any:
+        """Return the response for the pre-context-manager implementation."""
+
+        async def get_response() -> MagicMock:
+            return self.response
+
+        return get_response().__await__()
+
+    async def __aenter__(self) -> MagicMock:
+        """Enter the response context."""
+        return self.response
+
+    async def __aexit__(self, *args: object) -> None:
+        """Record response context cleanup."""
+        self.exited = True
 
 
 @pytest.fixture
@@ -71,6 +99,52 @@ async def test_get_current_rate_limited(client: RaceMapApiClient) -> None:
         with pytest.raises(RaceMapRateLimitError) as err:
             await client.async_get_current()
     assert err.value.retry_after == 42.0
+
+
+@pytest.mark.parametrize("retry_after", ["later", "Wed, 21 Oct 2015 07:28:00 GMT"])
+async def test_get_current_rate_limited_with_nondelta_retry_after(
+    retry_after: str,
+) -> None:
+    """Raise the integration error and close the response for every 429 hint."""
+    response = MagicMock(status=429, headers={"Retry-After": retry_after})
+    request = RequestContext(response)
+    session = MagicMock()
+    session.get.return_value = request
+    api_client = RaceMapApiClient(session, "secret-token", EVENT_ID)
+
+    with pytest.raises(RaceMapRateLimitError) as err:
+        await api_client.async_get_current()
+
+    assert err.value.retry_after is None
+    assert request.exited
+
+
+async def test_get_current_malformed_json_raises_connection_error() -> None:
+    """Wrap malformed JSON payload errors in an integration exception."""
+    response = MagicMock(status=200, headers={})
+    response.json = AsyncMock(
+        side_effect=json.JSONDecodeError("Expecting value", "", 0)
+    )
+    request = RequestContext(response)
+    session = MagicMock()
+    session.get.return_value = request
+    api_client = RaceMapApiClient(session, "secret-token", EVENT_ID)
+
+    with pytest.raises(RaceMapConnectionError):
+        await api_client.async_get_current()
+
+
+async def test_get_current_json_client_error_raises_connection_error() -> None:
+    """Wrap aiohttp payload-read errors in an integration exception."""
+    response = MagicMock(status=200, headers={})
+    response.json = AsyncMock(side_effect=aiohttp.ClientError("read failed"))
+    request = RequestContext(response)
+    session = MagicMock()
+    session.get.return_value = request
+    api_client = RaceMapApiClient(session, "secret-token", EVENT_ID)
+
+    with pytest.raises(RaceMapConnectionError):
+        await api_client.async_get_current()
 
 
 async def test_get_current_network_error(client: RaceMapApiClient) -> None:

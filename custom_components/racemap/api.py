@@ -42,36 +42,43 @@ class RaceMapApiClient:
         started = time.monotonic()
         try:
             async with asyncio.timeout(REQUEST_TIMEOUT):
-                response = await self._session.get(self._url, headers=headers)
+                async with self._session.get(self._url, headers=headers) as response:
+                    LOGGER.debug(
+                        "RaceMap GET /current event=%s status=%s duration=%.3fs",
+                        self._event_id,
+                        response.status,
+                        time.monotonic() - started,
+                    )
+
+                    if response.status in (401, 403):
+                        raise RaceMapAuthError("Invalid RaceMap API token")
+                    if response.status == 404:
+                        raise RaceMapEventNotFoundError(
+                            f"RaceMap event {self._event_id} not found"
+                        )
+                    if response.status == 429:
+                        retry_after = response.headers.get("Retry-After")
+                        try:
+                            retry_after_seconds = (
+                                float(retry_after) if retry_after else None
+                            )
+                        except (TypeError, ValueError):
+                            retry_after_seconds = None
+                        raise RaceMapRateLimitError(retry_after_seconds)
+                    if response.status >= 400:
+                        raise RaceMapConnectionError(
+                            f"Unexpected RaceMap status {response.status}"
+                        )
+
+                    payload = await response.json()
+                    data = RaceData.parse(payload)
         except (TimeoutError, aiohttp.ClientError) as err:
             raise RaceMapConnectionError(
                 f"Error connecting to RaceMap: {err}"
             ) from err
-
-        LOGGER.debug(
-            "RaceMap GET /current event=%s status=%s duration=%.3fs",
-            self._event_id,
-            response.status,
-            time.monotonic() - started,
-        )
-
-        if response.status in (401, 403):
-            raise RaceMapAuthError("Invalid RaceMap API token")
-        if response.status == 404:
-            raise RaceMapEventNotFoundError(
-                f"RaceMap event {self._event_id} not found"
-            )
-        if response.status == 429:
-            retry_after = response.headers.get("Retry-After")
-            raise RaceMapRateLimitError(
-                float(retry_after) if retry_after else None
-            )
-        if response.status >= 400:
+        except ValueError as err:
             raise RaceMapConnectionError(
-                f"Unexpected RaceMap status {response.status}"
-            )
-
-        payload = await response.json()
-        data = RaceData.parse(payload)
+                f"Error reading RaceMap response: {err}"
+            ) from err
         LOGGER.debug("RaceMap parsed %d participants", len(data.participants))
         return data
