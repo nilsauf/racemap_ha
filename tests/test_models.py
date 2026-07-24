@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from datetime import datetime
 from typing import Any
 
@@ -46,6 +47,26 @@ def test_parse_skips_malformed_starter(current_json: dict[str, Any]) -> None:
     payload["starters"] = [*current_json["starters"], {"no_id": True}]
     data = RaceData.parse(payload)
     assert len(data.participants) == 3  # malformed dropped
+
+
+def test_parse_skips_malformed_nested_participants(
+    current_json: dict[str, Any],
+) -> None:
+    """Skip malformed nested participant data without losing valid entries."""
+    payload = copy.deepcopy(current_json)
+    payload["starters"].extend(
+        [
+            {"id": "bad-battery", "device": {"battery": "not-an-int"}},
+            {"id": "bad-current", "current": []},
+            {"id": "bad-device", "device": []},
+        ]
+    )
+
+    data = RaceData.parse(payload)
+
+    assert [participant.id for participant in data.participants] == [
+        starter["id"] for starter in current_json["starters"]
+    ]
 
 
 def test_racedata_equality(current_json: dict[str, Any]) -> None:

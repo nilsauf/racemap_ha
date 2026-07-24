@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Self
@@ -55,7 +56,7 @@ class ParticipantCurrent:
     gap_distance_ex: float | None
 
     @classmethod
-    def parse(cls, raw: dict[str, Any]) -> Self:
+    def parse(cls, raw: Mapping[str, Any]) -> Self:
         """Parse the current object."""
         return cls(
             time=_dt(raw.get("time")),
@@ -95,7 +96,7 @@ class ParticipantDevice:
     device_id: str | None
 
     @classmethod
-    def parse(cls, raw: dict[str, Any]) -> Self:
+    def parse(cls, raw: Mapping[str, Any]) -> Self:
         """Parse the device object."""
         battery = raw.get("battery")
         return cls(
@@ -131,10 +132,14 @@ class Participant:
         return self.id
 
     @classmethod
-    def parse(cls, raw: dict[str, Any]) -> Self:
+    def parse(cls, raw: Mapping[str, Any]) -> Self:
         """Parse a starter object. Raises KeyError if id is missing."""
         current = raw.get("current")
         device = raw.get("device")
+        if current is not None and not isinstance(current, Mapping):
+            raise TypeError("participant current data is not a mapping")
+        if device is not None and not isinstance(device, Mapping):
+            raise TypeError("participant device data is not a mapping")
         return cls(
             id=raw["id"],
             name=raw.get("name"),
@@ -157,7 +162,7 @@ class EventInfo:
     result_time: datetime | None
 
     @classmethod
-    def parse(cls, raw: dict[str, Any]) -> Self:
+    def parse(cls, raw: Mapping[str, Any]) -> Self:
         """Parse the event object."""
         return cls(
             name=raw.get("name"),
@@ -187,8 +192,8 @@ class RaceData:
         for raw in payload.get("starters") or []:
             try:
                 participants.append(Participant.parse(raw))
-            except (KeyError, TypeError):
-                LOGGER.warning("Skipping malformed participant entry: %s", raw)
+            except (KeyError, TypeError, ValueError):
+                LOGGER.warning("Skipping malformed participant entry")
         return cls(
             event=EventInfo.parse(payload),
             participants=tuple(participants),
