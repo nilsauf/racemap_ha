@@ -10,7 +10,7 @@ from .api import RaceMapApiClient
 from .const import CONF_EVENT_ID, CONF_TOKEN
 from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 
-PLATFORMS: list[Platform] = []
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
 
 
 async def async_setup_entry(
