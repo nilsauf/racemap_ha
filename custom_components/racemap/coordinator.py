@@ -1,0 +1,61 @@
+"""DataUpdateCoordinator for RaceMap."""
+
+from __future__ import annotations
+
+from datetime import timedelta
+
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .api import RaceMapApiClient
+from .const import CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL, DOMAIN, LOGGER
+from .exceptions import (
+    RaceMapAuthError,
+    RaceMapError,
+    RaceMapRateLimitError,
+)
+from .models import RaceData
+
+type RaceMapConfigEntry = ConfigEntry[RaceMapDataUpdateCoordinator]
+
+
+class RaceMapDataUpdateCoordinator(DataUpdateCoordinator[RaceData]):
+    """Coordinate a single /current poll for all entities."""
+
+    config_entry: RaceMapConfigEntry
+
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        entry: RaceMapConfigEntry,
+        client: RaceMapApiClient,
+    ) -> None:
+        """Initialize the coordinator."""
+        interval = entry.options.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL)
+        super().__init__(
+            hass,
+            LOGGER,
+            name=DOMAIN,
+            config_entry=entry,
+            update_interval=timedelta(seconds=interval),
+            always_update=False,
+        )
+        self.client = client
+
+    async def _async_update_data(self) -> RaceData:
+        """Fetch data from the RaceMap API."""
+        try:
+            return await self.client.async_get_current()
+        except RaceMapAuthError as err:
+            raise ConfigEntryAuthFailed(
+                "Authentication with RaceMap failed"
+            ) from err
+        except RaceMapRateLimitError as err:
+            raise UpdateFailed(
+                "RaceMap API rate limit exceeded",
+                retry_after=err.retry_after,
+            ) from err
+        except RaceMapError as err:
+            raise UpdateFailed(f"Error updating RaceMap data: {err}") from err
