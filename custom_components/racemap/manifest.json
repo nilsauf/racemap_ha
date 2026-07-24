@@ -1,0 +1,14 @@
+{
+  "domain": "racemap",
+  "name": "RaceMap",
+  "codeowners": ["@your-github-handle"],
+  "config_flow": true,
+  "documentation": "https://github.com/your-github-handle/racemap-ha",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/your-github-handle/racemap-ha/issues",
+  "loggers": ["custom_components.racemap"],
+  "quality_scale": "silver",
+  "requirements": [],
+  "version": "0.1.0"
+}
