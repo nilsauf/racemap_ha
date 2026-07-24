@@ -2,21 +2,30 @@
 
 from __future__ import annotations
 
-from homeassistant.components.device_tracker import SourceType, TrackerEntity
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from typing import TYPE_CHECKING
+
+from homeassistant.components.device_tracker import (  # type: ignore[attr-defined]
+    SourceType,
+    TrackerEntity,
+)
+from homeassistant.core import callback
 
 from .const import CONF_EVENT_ID
-from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 from .entity import RaceMapEntity, participant_device_info
-from .models import Participant
 from .sensor import selected_participants
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
+    from .models import Participant
 
 PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     entry: RaceMapConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
@@ -32,7 +41,9 @@ async def async_setup_entry(
             if participant.id in known_participant_ids:
                 continue
             known_participant_ids.add(participant.id)
-            new_entities.append(RaceMapDeviceTracker(coordinator, entry, participant.id))
+            new_entities.append(
+                RaceMapDeviceTracker(coordinator, entry, participant.id)
+            )
         if new_entities:
             async_add_entities(new_entities)
 
@@ -59,7 +70,11 @@ class RaceMapDeviceTracker(RaceMapEntity, TrackerEntity):
         event_id = entry.data[CONF_EVENT_ID]
         self._attr_unique_id = f"{event_id}_{participant_id}_tracker"
         participant = coordinator.data.participants_by_id[participant_id]
-        self._attr_device_info = participant_device_info(entry, participant)
+        # BaseTrackerEntity narrows _attr_device_info to None, but a RaceMap
+        # tracker belongs to its participant device, so we override the type.
+        self._attr_device_info = participant_device_info(  # type: ignore[assignment]
+            entry, participant
+        )
 
     @property
     def _participant(self) -> Participant | None:
@@ -73,7 +88,9 @@ class RaceMapDeviceTracker(RaceMapEntity, TrackerEntity):
         if not super().available or participant is None:
             return False
         current = participant.current
-        return current is not None and current.lat is not None and current.lng is not None
+        return (
+            current is not None and current.lat is not None and current.lng is not None
+        )
 
     @property
     def latitude(self) -> float | None:

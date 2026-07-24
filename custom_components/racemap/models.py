@@ -4,25 +4,30 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self
 
 from homeassistant.util import dt as dt_util
 
 from .const import LOGGER
 
+if TYPE_CHECKING:
+    from datetime import datetime
 
-def _f(value: Any) -> float | None:
+_CURRENT_NOT_MAPPING = "participant current data is not a mapping"
+_DEVICE_NOT_MAPPING = "participant device data is not a mapping"
+
+
+def _f(value: object) -> float | None:
     """Coerce to float or None."""
     if value is None:
         return None
     try:
-        return float(value)
+        return float(value)  # type: ignore[arg-type]
     except (TypeError, ValueError):
         return None
 
 
-def _dt(value: Any) -> datetime | None:
+def _dt(value: object) -> datetime | None:
     """Parse an ISO timestamp to an aware datetime or None."""
     if not value:
         return None
@@ -137,9 +142,9 @@ class Participant:
         current = raw.get("current")
         device = raw.get("device")
         if current is not None and not isinstance(current, Mapping):
-            raise TypeError("participant current data is not a mapping")
+            raise TypeError(_CURRENT_NOT_MAPPING)
         if device is not None and not isinstance(device, Mapping):
-            raise TypeError("participant device data is not a mapping")
+            raise TypeError(_DEVICE_NOT_MAPPING)
         return cls(
             id=raw["id"],
             name=raw.get("name"),

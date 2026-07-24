@@ -9,16 +9,36 @@ from typing import Any
 BASE = Path("custom_components/racemap")
 
 SENSOR_KEYS = {
-    "event_location", "start_time", "end_time", "result_time",
-    "participant_count", "speed", "from_start", "to_finish", "gap_distance",
-    "eta", "gap", "gap_chase", "gap_average", "distance_to_shadow_track",
-    "elevation", "latitude", "longitude", "current_time", "battery",
-    "last_location_at", "online",
+    "event_location",
+    "start_time",
+    "end_time",
+    "result_time",
+    "participant_count",
+    "speed",
+    "from_start",
+    "to_finish",
+    "gap_distance",
+    "eta",
+    "gap",
+    "gap_chase",
+    "gap_average",
+    "distance_to_shadow_track",
+    "elevation",
+    "latitude",
+    "longitude",
+    "current_time",
+    "battery",
+    "last_location_at",
+    "online",
 }
 
 EXTRAPOLATED_SENSOR_KEYS = {
-    "from_start_ex", "to_finish_ex", "gap_ex", "gap_chase_ex",
-    "gap_average_ex", "gap_distance_ex",
+    "from_start_ex",
+    "to_finish_ex",
+    "gap_ex",
+    "gap_chase_ex",
+    "gap_average_ex",
+    "gap_distance_ex",
 }
 
 
@@ -60,14 +80,14 @@ def test_config_steps_present() -> None:
 def test_all_sensor_keys_translated() -> None:
     strings = _load("strings.json")
     names = set(strings["entity"]["sensor"])
-    assert SENSOR_KEYS <= names
+    assert names >= SENSOR_KEYS
 
 
 def test_extrapolated_sensor_keys_translated() -> None:
     """Each translation file exposes the six extrapolated sensor names."""
     for name in ("strings.json", "translations/en.json", "translations/de.json"):
         sensor = _load(name)["entity"]["sensor"]
-        assert EXTRAPOLATED_SENSOR_KEYS <= set(sensor), name
+        assert set(sensor) >= EXTRAPOLATED_SENSOR_KEYS, name
 
 
 def test_device_tracker_key_translated() -> None:
@@ -102,9 +122,7 @@ def test_full_nested_source_keys_match_across_files() -> None:
             keys |= _nested_keys(data.get(section, {}), section)
         entity = data.get("entity", {})
         keys |= _nested_keys(entity.get("sensor", {}), "entity.sensor")
-        keys |= _nested_keys(
-            entity.get("device_tracker", {}), "entity.device_tracker"
-        )
+        keys |= _nested_keys(entity.get("device_tracker", {}), "entity.device_tracker")
         return keys
 
     strings_keys = structural_keys(strings)
@@ -122,4 +140,4 @@ def test_icons_cover_selected_keys() -> None:
 
 def test_icons_cover_extrapolated_keys() -> None:
     icons = _load("icons.json")["entity"]["sensor"]
-    assert EXTRAPOLATED_SENSOR_KEYS <= set(icons)
+    assert set(icons) >= EXTRAPOLATED_SENSOR_KEYS

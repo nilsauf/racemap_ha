@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import RaceMapApiClient
 from .const import CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL, DOMAIN, LOGGER
 from .exceptions import (
     RaceMapAuthError,
@@ -17,6 +16,11 @@ from .exceptions import (
     RaceMapRateLimitError,
 )
 from .models import RaceData
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from .api import RaceMapApiClient
 
 type RaceMapConfigEntry = ConfigEntry[RaceMapDataUpdateCoordinator]
 

@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import HomeAssistant
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 from custom_components.racemap.const import CONF_EVENT_ID, CONF_TOKEN, DOMAIN
 from custom_components.racemap.exceptions import RaceMapConnectionError
@@ -44,9 +46,7 @@ async def test_setup_and_unload(
     assert entry.state is ConfigEntryState.NOT_LOADED
 
 
-async def test_setup_not_ready(
-    hass: HomeAssistant, entry: MockConfigEntry
-) -> None:
+async def test_setup_not_ready(hass: HomeAssistant, entry: MockConfigEntry) -> None:
     entry.add_to_hass(hass)
     with patch(
         "custom_components.racemap.RaceMapApiClient.async_get_current",

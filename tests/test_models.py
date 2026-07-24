@@ -31,13 +31,23 @@ def test_parse_device_may_be_none(current_json: dict[str, Any]) -> None:
 
 def test_display_name_fallbacks() -> None:
     p = Participant(
-        id="x", name=None, start_number="007", marker_color=None,
-        tags={}, current=None, device=None,
+        id="x",
+        name=None,
+        start_number="007",
+        marker_color=None,
+        tags={},
+        current=None,
+        device=None,
     )
     assert p.display_name == "#007"
     p2 = Participant(
-        id="y", name="Max", start_number=None, marker_color=None,
-        tags={}, current=None, device=None,
+        id="y",
+        name="Max",
+        start_number=None,
+        marker_color=None,
+        tags={},
+        current=None,
+        device=None,
     )
     assert p2.display_name == "Max"
 

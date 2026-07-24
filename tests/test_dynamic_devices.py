@@ -3,18 +3,19 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 from custom_components.racemap.const import (
     CONF_EVENT_ID,
     CONF_PARTICIPANTS,
     CONF_TOKEN,
-    CONF_UPDATE_INTERVAL,
     DOMAIN,
 )
 from custom_components.racemap.models import RaceData
@@ -114,8 +115,13 @@ async def test_cleanup_removes_roster_departures_only_for_current_event(
     entry.runtime_data.async_set_updated_data(RaceData.parse(stale_data))
     await hass.async_block_till_done()
 
-    assert registry.async_get_device(
-        identifiers={(DOMAIN, f"evt123_{participant_id}")}
-    ) is None, "participant device still has the stale entry association"
-    assert registry.async_get_device({(DOMAIN, entry.entry_id)}) is not None, "event device is missing"
-    assert registry.async_get_device(foreign_device.identifiers) is not None, "foreign device is missing"
+    assert (
+        registry.async_get_device(identifiers={(DOMAIN, f"evt123_{participant_id}")})
+        is None
+    ), "participant device still has the stale entry association"
+    assert registry.async_get_device({(DOMAIN, entry.entry_id)}) is not None, (
+        "event device is missing"
+    )
+    assert registry.async_get_device(foreign_device.identifiers) is not None, (
+        "foreign device is missing"
+    )

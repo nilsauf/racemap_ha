@@ -47,6 +47,8 @@ def test_rate_limit_exception_keeps_retry_after() -> None:
     assert exc.retry_after == 12.5
     assert exc.translation_domain == DOMAIN
     assert exc.translation_key == "rate_limited"
+
+
 URL = f"https://racemap.com/api/data/v1/{EVENT_ID}/current"
 
 

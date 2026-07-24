@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import pytest
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
 from homeassistant.const import Platform, UnitOfLength, UnitOfTime
-from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 from custom_components.racemap.const import (
     CONF_EVENT_ID,
@@ -74,9 +77,7 @@ def entry(current_json: dict[str, Any]) -> MockConfigEntry:
     )
 
 
-async def _setup(
-    hass: HomeAssistant, entry: MockConfigEntry, data: RaceData
-) -> None:
+async def _setup(hass: HomeAssistant, entry: MockConfigEntry, data: RaceData) -> None:
     """Set up an entry with coordinator data and the real sensor platform."""
     entry.add_to_hass(hass)
     with (
@@ -96,8 +97,6 @@ async def test_event_sensors_created(
     """Create event sensors from coordinator data."""
     await _setup(hass, entry, RaceData.parse(current_json))
 
-    from homeassistant.helpers import entity_registry as er
-
     registry = er.async_get(hass)
     entity_id = registry.async_get_entity_id(
         "sensor", DOMAIN, f"{entry.entry_id}_participant_count"
@@ -115,8 +114,6 @@ async def test_participant_speed_sensor(
     """Create the selected participant's speed sensor."""
     await _setup(hass, entry, RaceData.parse(current_json))
     participant_id = current_json["starters"][0]["id"]
-
-    from homeassistant.helpers import entity_registry as er
 
     registry = er.async_get(hass)
     entity_id = registry.async_get_entity_id(
@@ -146,8 +143,6 @@ async def test_diagnostic_sensor_absent_when_no_device(
 
     await _setup(hass, entry, RaceData.parse(current_json))
 
-    from homeassistant.helpers import entity_registry as er
-
     registry = er.async_get(hass)
     entity_id = registry.async_get_entity_id(
         "sensor", DOMAIN, f"evt123_{participant['id']}_battery"
@@ -160,9 +155,12 @@ def test_extrapolated_sensor_inventory() -> None:
     """The six extrapolated descriptions exist with mirrored base metadata."""
     by_key = {desc.key: desc for desc in PARTICIPANT_SENSORS}
 
-    for ex_key, (base_key, device_class, state_class, unit) in (
-        EXTRAPOLATED_METADATA.items()
-    ):
+    for ex_key, (
+        base_key,
+        device_class,
+        state_class,
+        unit,
+    ) in EXTRAPOLATED_METADATA.items():
         assert ex_key in by_key, f"missing extrapolated sensor {ex_key}"
         assert base_key in by_key, f"missing base sensor {base_key}"
 
@@ -180,9 +178,7 @@ def test_extrapolated_sensor_inventory() -> None:
         # And matches the actual base description too.
         assert ex.device_class == base.device_class, ex_key
         assert ex.state_class == base.state_class, ex_key
-        assert (
-            ex.native_unit_of_measurement == base.native_unit_of_measurement
-        ), ex_key
+        assert ex.native_unit_of_measurement == base.native_unit_of_measurement, ex_key
 
         # Translation key mirrors its own key.
         assert ex.translation_key == ex_key, ex_key

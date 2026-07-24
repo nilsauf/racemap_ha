@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import ATTRIBUTION, DOMAIN, MANUFACTURER
 from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
-from .models import EventInfo, Participant
+
+if TYPE_CHECKING:
+    from .models import EventInfo, Participant
 
 
-def event_device_info(
-    entry: RaceMapConfigEntry, event: EventInfo
-) -> DeviceInfo:
+def event_device_info(entry: RaceMapConfigEntry, event: EventInfo) -> DeviceInfo:
     """Build the event device info."""
     return DeviceInfo(
         identifiers={(DOMAIN, entry.entry_id)},

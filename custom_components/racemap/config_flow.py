@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import voluptuous as vol
 from homeassistant.config_entries import (
@@ -37,7 +36,6 @@ from .const import (
     LOGGER,
     MIN_UPDATE_INTERVAL,
 )
-from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 from .exceptions import (
     RaceMapAuthError,
     RaceMapConnectionError,
@@ -45,15 +43,20 @@ from .exceptions import (
     RaceMapEventNotFoundError,
     RaceMapRateLimitError,
 )
-from .models import RaceData
 
-TOKEN_SELECTOR = TextSelector(
-    TextSelectorConfig(type=TextSelectorType.PASSWORD)
-)
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
+    from .models import RaceData
+
+TOKEN_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
 
 
 async def _validate(
-    hass: Any, token: str, event_id: str
+    hass: HomeAssistant, token: str, event_id: str
 ) -> tuple[RaceData | None, str | None]:
     """Validate credentials; return (data, error_key)."""
     session = async_get_clientsession(hass)
@@ -90,9 +93,7 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
             else:
                 await self.async_set_unique_id(user_input[CONF_EVENT_ID])
                 self._abort_if_unique_id_configured()
-                title = (data.event.name if data else None) or user_input[
-                    CONF_EVENT_ID
-                ]
+                title = (data.event.name if data else None) or user_input[CONF_EVENT_ID]
                 return self.async_create_entry(title=title, data=user_input)
 
         return self.async_show_form(
@@ -107,7 +108,7 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def async_step_reauth(
-        self, entry_data: Mapping[str, Any]
+        self, _entry_data: Mapping[str, Any]
     ) -> ConfigFlowResult:
         """Handle reauth on auth failure."""
         return await self.async_step_reauth_confirm()
@@ -163,9 +164,7 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
                     vol.Required(
                         CONF_TOKEN, default=entry.data[CONF_TOKEN]
                     ): TOKEN_SELECTOR,
-                    vol.Required(
-                        CONF_EVENT_ID, default=entry.data[CONF_EVENT_ID]
-                    ): str,
+                    vol.Required(CONF_EVENT_ID, default=entry.data[CONF_EVENT_ID]): str,
                 }
             ),
             errors=errors,
@@ -174,7 +173,7 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: RaceMapConfigEntry,
+        _config_entry: RaceMapConfigEntry,
     ) -> RaceMapOptionsFlow:
         """Return the options flow."""
         return RaceMapOptionsFlow()

@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
 import pytest
-from homeassistant.config_entries import SOURCE_REAUTH, SOURCE_USER
-from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import SOURCE_USER
 from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 from custom_components.racemap.const import (
     CONF_EVENT_ID,
@@ -126,9 +128,7 @@ async def test_reconfigure_success(
     assert entry.data[CONF_TOKEN] == "t2"
 
 
-async def test_options_flow(
-    hass: HomeAssistant, current_json: dict[str, Any]
-) -> None:
+async def test_options_flow(hass: HomeAssistant, current_json: dict[str, Any]) -> None:
     entry = MockConfigEntry(
         domain=DOMAIN, unique_id="evt123", data=USER_INPUT, options={}
     )
@@ -156,10 +156,7 @@ def _participant_option_values(result: dict[str, Any]) -> list[str]:
     schema = result["data_schema"].schema
     for key, selector in schema.items():
         if key == CONF_PARTICIPANTS:
-            return [
-                option["value"]
-                for option in selector.config["options"]
-            ]
+            return [option["value"] for option in selector.config["options"]]
     return []
 
 

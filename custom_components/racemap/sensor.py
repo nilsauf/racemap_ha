@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -22,13 +23,16 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import device_registry as dr
-from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
 from .const import CONF_EVENT_ID, CONF_PARTICIPANTS, DOMAIN
-from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 from .entity import RaceMapEntity, event_device_info, participant_device_info
 from .models import EventInfo, Participant, RaceData
+
+if TYPE_CHECKING:
+    from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+
+    from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 
 PARALLEL_UPDATES = 0
 
@@ -60,7 +64,8 @@ def _current_value(participant: Participant, attribute: str) -> StateType | date
     """Return a live participant value when it is available."""
     if participant.current is None:
         return None
-    return getattr(participant.current, attribute)
+    value: StateType | datetime = getattr(participant.current, attribute)
+    return value
 
 
 def _has_device(participant: Participant) -> bool:
@@ -360,13 +365,13 @@ async def async_setup_entry(
             if participant.id in known_participant_ids:
                 continue
             known_participant_ids.add(participant.id)
-            for description in PARTICIPANT_SENSORS + PARTICIPANT_DIAGNOSTIC_SENSORS:
-                if description.exists_fn(participant):
-                    new_entities.append(
-                        RaceMapParticipantSensor(
-                            coordinator, entry, participant.id, description
-                        )
-                    )
+            new_entities.extend(
+                RaceMapParticipantSensor(
+                    coordinator, entry, participant.id, description
+                )
+                for description in PARTICIPANT_SENSORS + PARTICIPANT_DIAGNOSTIC_SENSORS
+                if description.exists_fn(participant)
+            )
         if new_entities:
             async_add_entities(new_entities)
 

@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock
 
 import pytest
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import UpdateFailed
 from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
 
 from custom_components.racemap.const import CONF_EVENT_ID, CONF_TOKEN, DOMAIN
 from custom_components.racemap.coordinator import RaceMapDataUpdateCoordinator
@@ -44,9 +46,7 @@ async def test_update_success(
     assert coordinator.data.event.name == current_json["name"]
 
 
-async def test_update_auth_error(
-    hass: HomeAssistant, entry: MockConfigEntry
-) -> None:
+async def test_update_auth_error(hass: HomeAssistant, entry: MockConfigEntry) -> None:
     entry.add_to_hass(hass)
     client = AsyncMock()
     client.async_get_current.side_effect = RaceMapAuthError("bad")
@@ -55,9 +55,7 @@ async def test_update_auth_error(
         await coordinator._async_update_data()
 
 
-async def test_update_rate_limit(
-    hass: HomeAssistant, entry: MockConfigEntry
-) -> None:
+async def test_update_rate_limit(hass: HomeAssistant, entry: MockConfigEntry) -> None:
     entry.add_to_hass(hass)
     client = AsyncMock()
     client.async_get_current.side_effect = RaceMapRateLimitError(30.0)

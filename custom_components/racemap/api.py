@@ -8,7 +8,16 @@ import time
 
 import aiohttp
 
-from .const import BASE_URL, LOGGER, REQUEST_TIMEOUT
+from .const import (
+    BASE_URL,
+    HTTP_BAD_REQUEST,
+    HTTP_FORBIDDEN,
+    HTTP_NOT_FOUND,
+    HTTP_TOO_MANY_REQUESTS,
+    HTTP_UNAUTHORIZED,
+    LOGGER,
+    REQUEST_TIMEOUT,
+)
 from .exceptions import (
     RaceMapAuthError,
     RaceMapConnectionError,
@@ -51,11 +60,11 @@ class RaceMapApiClient:
                         time.monotonic() - started,
                     )
 
-                    if response.status in (401, 403):
+                    if response.status in (HTTP_UNAUTHORIZED, HTTP_FORBIDDEN):
                         raise RaceMapAuthError
-                    if response.status == 404:
+                    if response.status == HTTP_NOT_FOUND:
                         raise RaceMapEventNotFoundError
-                    if response.status == 429:
+                    if response.status == HTTP_TOO_MANY_REQUESTS:
                         retry_after = response.headers.get("Retry-After")
                         try:
                             retry_after_seconds = (
@@ -69,12 +78,12 @@ class RaceMapApiClient:
                         ):
                             retry_after_seconds = None
                         raise RaceMapRateLimitError(retry_after_seconds)
-                    if response.status >= 400:
+                    if response.status >= HTTP_BAD_REQUEST:
                         raise RaceMapConnectionError
 
                     payload = await response.json()
                     if not isinstance(payload, dict):
-                        raise ValueError("RaceMap response must be a JSON object")
+                        raise RaceMapConnectionError
                     data = RaceData.parse(payload)
         except (TimeoutError, aiohttp.ClientError) as err:
             raise RaceMapConnectionError from err
