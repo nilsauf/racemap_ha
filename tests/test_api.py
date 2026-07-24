@@ -101,7 +101,9 @@ async def test_get_current_rate_limited(client: RaceMapApiClient) -> None:
     assert err.value.retry_after == 42.0
 
 
-@pytest.mark.parametrize("retry_after", ["later", "Wed, 21 Oct 2015 07:28:00 GMT"])
+@pytest.mark.parametrize(
+    "retry_after", ["later", "Wed, 21 Oct 2015 07:28:00 GMT", "-1", "nan", "inf"]
+)
 async def test_get_current_rate_limited_with_nondelta_retry_after(
     retry_after: str,
 ) -> None:
@@ -117,6 +119,19 @@ async def test_get_current_rate_limited_with_nondelta_retry_after(
 
     assert err.value.retry_after is None
     assert request.exited
+
+
+async def test_get_current_non_mapping_json_raises_connection_error() -> None:
+    """Wrap a valid JSON response with an unexpected top-level shape."""
+    response = MagicMock(status=200, headers={})
+    response.json = AsyncMock(return_value=[])
+    request = RequestContext(response)
+    session = MagicMock()
+    session.get.return_value = request
+    api_client = RaceMapApiClient(session, "secret-token", EVENT_ID)
+
+    with pytest.raises(RaceMapConnectionError):
+        await api_client.async_get_current()
 
 
 async def test_get_current_malformed_json_raises_connection_error() -> None:

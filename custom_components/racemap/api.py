@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import math
 import time
 
 import aiohttp
@@ -64,6 +65,11 @@ class RaceMapApiClient:
                             )
                         except (TypeError, ValueError):
                             retry_after_seconds = None
+                        if retry_after_seconds is not None and (
+                            not math.isfinite(retry_after_seconds)
+                            or retry_after_seconds < 0
+                        ):
+                            retry_after_seconds = None
                         raise RaceMapRateLimitError(retry_after_seconds)
                     if response.status >= 400:
                         raise RaceMapConnectionError(
@@ -71,6 +77,8 @@ class RaceMapApiClient:
                         )
 
                     payload = await response.json()
+                    if not isinstance(payload, dict):
+                        raise ValueError("RaceMap response must be a JSON object")
                     data = RaceData.parse(payload)
         except (TimeoutError, aiohttp.ClientError) as err:
             raise RaceMapConnectionError(
