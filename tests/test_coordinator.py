@@ -62,8 +62,10 @@ async def test_update_rate_limit(
     client = AsyncMock()
     client.async_get_current.side_effect = RaceMapRateLimitError(30.0)
     coordinator = RaceMapDataUpdateCoordinator(hass, entry, client)
-    with pytest.raises(UpdateFailed):
+    with pytest.raises(UpdateFailed) as err:
         await coordinator._async_update_data()
+    assert err.value.__cause__.translation_key == "rate_limited"
+    assert getattr(err.value, "retry_after", None) == 30.0
 
 
 async def test_update_connection_error(

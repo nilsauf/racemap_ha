@@ -149,3 +149,31 @@ async def test_options_flow(
     assert result["type"] is FlowResultType.CREATE_ENTRY
     assert entry.options[CONF_UPDATE_INTERVAL] == 60
     assert entry.options[CONF_PARTICIPANTS] == [participant_id]
+
+
+def _participant_option_values(result: dict[str, Any]) -> list[str]:
+    """Extract selector option values for the participants field."""
+    schema = result["data_schema"].schema
+    for key, selector in schema.items():
+        if key == CONF_PARTICIPANTS:
+            return [
+                option["value"]
+                for option in selector.config["options"]
+            ]
+    return []
+
+
+async def test_options_flow_fallback_to_stored_ids(hass: HomeAssistant) -> None:
+    """Stored participant IDs are offered when no coordinator data exists."""
+    stored_ids = ["starter-a", "starter-b"]
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        unique_id="evt123",
+        data=USER_INPUT,
+        options={CONF_PARTICIPANTS: stored_ids},
+    )
+    entry.add_to_hass(hass)
+    # Do not set up the entry: no runtime_data / coordinator.data available.
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    assert result["type"] is FlowResultType.FORM
+    assert _participant_option_values(result) == stored_ids

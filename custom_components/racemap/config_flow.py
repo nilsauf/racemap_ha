@@ -204,6 +204,13 @@ class RaceMapOptionsFlow(OptionsFlowWithReload):
                 )
                 for p in coordinator.data.participants
             ]
+        else:
+            # No runtime data: fall back to the stored participant IDs so the
+            # user can still review/deselect previously tracked participants.
+            options = [
+                SelectOptionDict(value=pid, label=pid)
+                for pid in self.config_entry.options.get(CONF_PARTICIPANTS, [])
+            ]
 
         schema = vol.Schema(
             {

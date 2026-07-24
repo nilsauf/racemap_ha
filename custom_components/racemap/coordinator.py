@@ -50,12 +50,17 @@ class RaceMapDataUpdateCoordinator(DataUpdateCoordinator[RaceData]):
             return await self.client.async_get_current()
         except RaceMapAuthError as err:
             raise ConfigEntryAuthFailed(
-                "Authentication with RaceMap failed"
+                translation_domain=DOMAIN,
+                translation_key="invalid_auth",
             ) from err
         except RaceMapRateLimitError as err:
             raise UpdateFailed(
-                "RaceMap API rate limit exceeded",
+                translation_domain=DOMAIN,
+                translation_key="rate_limited",
                 retry_after=err.retry_after,
             ) from err
         except RaceMapError as err:
-            raise UpdateFailed(f"Error updating RaceMap data: {err}") from err
+            raise UpdateFailed(
+                translation_domain=DOMAIN,
+                translation_key="cannot_connect",
+            ) from err

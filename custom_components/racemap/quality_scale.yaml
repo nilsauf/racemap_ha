@@ -38,7 +38,12 @@ rules:
   docs-configuration-parameters: done
   docs-installation-parameters: done
   entity-unavailable: done
-  integration-owner: done
+  integration-owner:
+    status: todo
+    comment: >-
+      Depends on real GitHub ownership metadata in manifest.json (codeowners),
+      which the maintainer intentionally deferred. Revisit once manifest owner
+      metadata is supplied.
   log-when-unavailable: done
   parallel-updates: done
   reauthentication-flow: done

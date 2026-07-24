@@ -12,14 +12,41 @@ from aiohttp import ClientSession
 from aioresponses import aioresponses
 
 from custom_components.racemap.api import RaceMapApiClient
+from custom_components.racemap.const import DOMAIN
 from custom_components.racemap.exceptions import (
     RaceMapAuthError,
     RaceMapConnectionError,
+    RaceMapError,
     RaceMapEventNotFoundError,
     RaceMapRateLimitError,
 )
 
 EVENT_ID = "evt123"
+
+
+@pytest.mark.parametrize(
+    ("exc", "translation_key"),
+    [
+        (RaceMapAuthError(), "invalid_auth"),
+        (RaceMapConnectionError(), "cannot_connect"),
+        (RaceMapEventNotFoundError(), "event_not_found"),
+        (RaceMapRateLimitError(), "rate_limited"),
+    ],
+)
+def test_exceptions_carry_translation_metadata(
+    exc: RaceMapError, translation_key: str
+) -> None:
+    """Each RaceMap exception localizes via the RaceMap translation domain."""
+    assert exc.translation_domain == DOMAIN
+    assert exc.translation_key == translation_key
+
+
+def test_rate_limit_exception_keeps_retry_after() -> None:
+    """The rate-limit exception retains its retry_after hint."""
+    exc = RaceMapRateLimitError(retry_after=12.5)
+    assert exc.retry_after == 12.5
+    assert exc.translation_domain == DOMAIN
+    assert exc.translation_key == "rate_limited"
 URL = f"https://racemap.com/api/data/v1/{EVENT_ID}/current"
 
 
