@@ -44,6 +44,7 @@ class RaceMapDeviceTracker(RaceMapEntity, TrackerEntity):
     """GPS tracker for a participant."""
 
     _attr_name = None
+    _attr_translation_key = "tracker"
     _attr_source_type = SourceType.GPS
 
     def __init__(

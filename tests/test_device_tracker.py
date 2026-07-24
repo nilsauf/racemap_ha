@@ -87,3 +87,19 @@ async def test_tracker_unavailable_without_location(
     state = hass.states.get(entity_id)
     assert state is not None
     assert state.state == "unavailable"
+
+
+async def test_tracker_uses_tracker_translation_key(
+    hass: HomeAssistant, entry: MockConfigEntry, current_json: dict[str, Any]
+) -> None:
+    """The tracker entity registry entry uses translation_key 'tracker'."""
+    await _setup(hass, entry, RaceData.parse(current_json))
+    participant_id = current_json["starters"][0]["id"]
+    registry = er.async_get(hass)
+    entity_id = registry.async_get_entity_id(
+        "device_tracker", DOMAIN, f"evt123_{participant_id}_tracker"
+    )
+    assert entity_id is not None
+    registry_entry = registry.async_get(entity_id)
+    assert registry_entry is not None
+    assert registry_entry.translation_key == "tracker"

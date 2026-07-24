@@ -61,12 +61,18 @@
       "participant_count": { "name": "Teilnehmer" },
       "speed": { "name": "Geschwindigkeit" },
       "from_start": { "name": "Distanz ab Start" },
+      "from_start_ex": { "name": "Distanz ab Start (extrapoliert)" },
       "to_finish": { "name": "Distanz bis Ziel" },
+      "to_finish_ex": { "name": "Distanz bis Ziel (extrapoliert)" },
       "gap_distance": { "name": "R\u00fcckstand (Distanz)" },
+      "gap_distance_ex": { "name": "R\u00fcckstand (Distanz, extrapoliert)" },
       "eta": { "name": "Voraussichtliche Ankunft" },
       "gap": { "name": "R\u00fcckstand" },
+      "gap_ex": { "name": "R\u00fcckstand (extrapoliert)" },
       "gap_chase": { "name": "R\u00fcckstand (Verfolger)" },
+      "gap_chase_ex": { "name": "R\u00fcckstand (Verfolger, extrapoliert)" },
       "gap_average": { "name": "R\u00fcckstand (Durchschnitt)" },
+      "gap_average_ex": { "name": "R\u00fcckstand (Durchschnitt, extrapoliert)" },
       "distance_to_shadow_track": { "name": "Distanz zur Strecke" },
       "elevation": { "name": "H\u00f6he" },
       "latitude": { "name": "Breitengrad" },
@@ -78,6 +84,9 @@
         "name": "Verbindung",
         "state": { "connected": "Verbunden", "disconnected": "Getrennt" }
       }
+    },
+    "device_tracker": {
+      "tracker": { "name": "Tracker" }
     }
   },
   "exceptions": {

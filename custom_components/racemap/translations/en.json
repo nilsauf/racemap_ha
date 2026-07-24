@@ -61,12 +61,18 @@
       "participant_count": { "name": "Participants" },
       "speed": { "name": "Speed" },
       "from_start": { "name": "Distance from start" },
+      "from_start_ex": { "name": "Distance from start (extrapolated)" },
       "to_finish": { "name": "Distance to finish" },
+      "to_finish_ex": { "name": "Distance to finish (extrapolated)" },
       "gap_distance": { "name": "Gap distance" },
+      "gap_distance_ex": { "name": "Gap distance (extrapolated)" },
       "eta": { "name": "Estimated time of arrival" },
       "gap": { "name": "Gap" },
+      "gap_ex": { "name": "Gap (extrapolated)" },
       "gap_chase": { "name": "Gap (chase)" },
+      "gap_chase_ex": { "name": "Gap (chase, extrapolated)" },
       "gap_average": { "name": "Gap (average)" },
+      "gap_average_ex": { "name": "Gap (average, extrapolated)" },
       "distance_to_shadow_track": { "name": "Distance to track" },
       "elevation": { "name": "Elevation" },
       "latitude": { "name": "Latitude" },
@@ -78,6 +84,9 @@
         "name": "Connection",
         "state": { "connected": "Connected", "disconnected": "Disconnected" }
       }
+    },
+    "device_tracker": {
+      "tracker": { "name": "Tracker" }
     }
   },
   "exceptions": {
