@@ -7,7 +7,6 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant.config_entries import (
-    SOURCE_REAUTH,
     ConfigFlow,
     ConfigFlowResult,
     OptionsFlowWithReload,
@@ -120,7 +119,7 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         entry = self._get_reauth_entry()
         if user_input is not None:
-            data, error = await _validate(
+            _data, error = await _validate(
                 self.hass, user_input[CONF_TOKEN], entry.data[CONF_EVENT_ID]
             )
             if error:
@@ -145,7 +144,7 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         entry = self._get_reconfigure_entry()
         if user_input is not None:
-            data, error = await _validate(
+            _data, error = await _validate(
                 self.hass, user_input[CONF_TOKEN], user_input[CONF_EVENT_ID]
             )
             if error:
