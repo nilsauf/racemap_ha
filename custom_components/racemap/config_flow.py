@@ -12,6 +12,7 @@ from homeassistant.config_entries import (
     OptionsFlowWithReload,
 )
 from homeassistant.core import callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     NumberSelector,
@@ -188,6 +189,9 @@ class RaceMapOptionsFlow(OptionsFlowWithReload):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
+            self._cleanup_stale_devices(
+                user_input.get(CONF_PARTICIPANTS, []),
+            )
             return self.async_create_entry(data=user_input)
 
         coordinator: RaceMapDataUpdateCoordinator | None = getattr(
@@ -234,3 +238,22 @@ class RaceMapOptionsFlow(OptionsFlowWithReload):
                 schema, self.config_entry.options
             ),
         )
+
+    def _cleanup_stale_devices(
+        self, participant_ids: list[str],
+    ) -> None:
+        """Remove this entry's participant devices absent from submitted options."""
+        event_id = self.config_entry.data[CONF_EVENT_ID]
+        selected_identifiers = {
+            (DOMAIN, f"{event_id}_{participant_id}")
+            for participant_id in participant_ids
+        }
+        registry = dr.async_get(self.hass)
+        for device in dr.async_entries_for_config_entry(registry, self.config_entry.entry_id):
+            participant_identifiers = {
+                identifier
+                for identifier in device.identifiers
+                if identifier[0] == DOMAIN and identifier[1].startswith(f"{event_id}_")
+            }
+            if participant_identifiers and not participant_identifiers & selected_identifiers:
+                registry.async_remove_device(device.id)

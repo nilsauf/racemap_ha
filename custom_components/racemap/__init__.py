@@ -7,11 +7,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import RaceMapApiClient
-from .const import CONF_EVENT_ID, CONF_TOKEN
+from .const import CONF_EVENT_ID, CONF_PARTICIPANTS, CONF_TOKEN, DOMAIN
 from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.DEVICE_TRACKER]
-
 
 async def async_setup_entry(
     hass: HomeAssistant, entry: RaceMapConfigEntry
