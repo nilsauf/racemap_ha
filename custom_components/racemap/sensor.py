@@ -21,10 +21,11 @@ from homeassistant.const import (
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 
-from .const import CONF_EVENT_ID, CONF_PARTICIPANTS
+from .const import CONF_EVENT_ID, CONF_PARTICIPANTS, DOMAIN
 from .coordinator import RaceMapConfigEntry, RaceMapDataUpdateCoordinator
 from .entity import RaceMapEntity, event_device_info, participant_device_info
 from .models import EventInfo, Participant, RaceData
@@ -258,6 +259,30 @@ def selected_participants(
     ]
 
 
+def _cleanup_stale_devices(
+    hass: HomeAssistant, entry: RaceMapConfigEntry, data: RaceData
+) -> None:
+    """Remove this entry's stale participant device associations."""
+    event_id = entry.data[CONF_EVENT_ID]
+    selected_ids = set(entry.options.get(CONF_PARTICIPANTS, []))
+    retained = {
+        (DOMAIN, f"{event_id}_{participant_id}")
+        for participant_id in selected_ids & data.participants_by_id.keys()
+    }
+    registry = dr.async_get(hass)
+    for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
+        participant_identifiers = {
+            identifier
+            for identifier in device.identifiers
+            if identifier[0] == DOMAIN and identifier[1].startswith(f"{event_id}_")
+        }
+        if participant_identifiers and not participant_identifiers & retained:
+            registry.async_update_device(
+                device.id,
+                remove_config_entry_id=entry.entry_id,
+            )
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: RaceMapConfigEntry,
@@ -275,6 +300,7 @@ async def async_setup_entry(
     @callback
     def _add_participant_entities() -> None:
         """Add sensors for selected participants appearing in coordinator data."""
+        _cleanup_stale_devices(hass, entry, coordinator.data)
         new_entities: list[SensorEntity] = []
         for participant in selected_participants(entry, coordinator.data):
             if participant.id in known_participant_ids:
