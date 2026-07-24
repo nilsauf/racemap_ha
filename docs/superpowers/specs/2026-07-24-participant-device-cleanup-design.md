@@ -2,22 +2,26 @@
 
 ## Goal
 
-Remove RaceMap participant devices immediately after they are deselected in a
-config entry's options, without removing the event device or unrelated devices.
+Remove RaceMap participant devices when they are deselected through the RaceMap
+options flow, without removing the event device or unrelated devices.
 
 ## Design
 
-Device cleanup belongs to the integration lifecycle rather than the sensor
-platform. Move the stale-device cleanup helper from `sensor.py` to the
-integration module (or an integration-level device helper).
+Device cleanup belongs to the options-flow lifecycle rather than the sensor
+platform or a config-entry update listener. Move the stale-device cleanup
+helper from `sensor.py` to an integration-level device helper that accepts the
+proposed participant IDs explicitly.
 
-During `async_setup_entry`, register a config-entry update listener with
-`entry.add_update_listener`. The listener runs whenever Home Assistant updates
-the entry, including direct `async_update_entry` calls and saves through the
-options flow.
+`RaceMapOptionsFlow` continues to extend `OptionsFlowWithReload`. When a user
+submits options, `async_step_init` invokes cleanup with
+`user_input[CONF_PARTICIPANTS]` before returning `async_create_entry`. The
+framework then persists the options and performs its existing automatic reload.
 
-The listener reads the updated participant selection and removes only device
-registry entries that:
+This avoids config-entry update listeners, which Home Assistant expressly
+disallows for entries managed by `OptionsFlowWithReload`. Arbitrary direct
+calls to `async_update_entry` intentionally do not initiate device cleanup.
+
+The helper removes only device registry entries that:
 
 - belong to the updated config entry;
 - have a RaceMap participant identifier using `<event_id>_<participant_id>`;
@@ -33,12 +37,13 @@ perform device cleanup.
 ## Error Handling
 
 Cleanup operates solely on the local Home Assistant device registry. It does
-not refresh coordinator data or call the RaceMap API, so an options update is
-not delayed or coupled to network availability.
+not refresh coordinator data or call the RaceMap API, so saving options is not
+delayed or coupled to network availability.
 
 ## Tests
 
-The dynamic-device test updates entry options directly and waits for pending
+The dynamic-device test submits the actual options flow, then waits for pending
 Home Assistant tasks. It verifies that the deselected participant device is
-removed immediately and that the selected participant, event device, and a
-foreign device remain registered.
+removed and that the selected participant, event device, and a foreign device
+remain registered. The existing options-flow test continues to verify the
+automatic reload path accepts the submitted settings.
