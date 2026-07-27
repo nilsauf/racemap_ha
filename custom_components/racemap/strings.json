@@ -1,0 +1,98 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to RaceMap",
+        "data": { "token": "API token", "event_id": "Event ID" },
+        "data_description": {
+          "token": "Your RaceMap API token (Account settings \u2192 API Tokens).",
+          "event_id": "The ID of the event you want to track."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate RaceMap",
+        "description": "The RaceMap API token is no longer valid. Enter a new token.",
+        "data": { "token": "API token" },
+        "data_description": { "token": "A new, valid RaceMap API token." }
+      },
+      "reconfigure": {
+        "title": "Reconfigure RaceMap",
+        "data": { "token": "API token", "event_id": "Event ID" },
+        "data_description": {
+          "token": "Your RaceMap API token.",
+          "event_id": "The ID of the event you want to track."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to RaceMap. Please try again.",
+      "invalid_auth": "Invalid API token.",
+      "event_not_found": "No event was found for this event ID.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This event is already configured.",
+      "reauth_successful": "Re-authentication was successful.",
+      "reconfigure_successful": "Reconfiguration was successful.",
+      "unique_id_mismatch": "The event ID does not match the existing configuration."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "RaceMap options",
+        "data": {
+          "update_interval": "Update interval (seconds)",
+          "participants": "Tracked participants"
+        },
+        "data_description": {
+          "update_interval": "How often to poll RaceMap for new data.",
+          "participants": "Participants to create devices and entities for."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "event_location": { "name": "Location" },
+      "start_time": { "name": "Start time" },
+      "end_time": { "name": "End time" },
+      "result_time": { "name": "Last update" },
+      "participant_count": { "name": "Participants" },
+      "speed": { "name": "Speed" },
+      "from_start": { "name": "Distance from start" },
+      "from_start_ex": { "name": "Distance from start (extrapolated)" },
+      "to_finish": { "name": "Distance to finish" },
+      "to_finish_ex": { "name": "Distance to finish (extrapolated)" },
+      "gap_distance": { "name": "Gap distance" },
+      "gap_distance_ex": { "name": "Gap distance (extrapolated)" },
+      "eta": { "name": "Estimated time of arrival" },
+      "gap": { "name": "Gap" },
+      "gap_ex": { "name": "Gap (extrapolated)" },
+      "gap_chase": { "name": "Gap (chase)" },
+      "gap_chase_ex": { "name": "Gap (chase, extrapolated)" },
+      "gap_average": { "name": "Gap (average)" },
+      "gap_average_ex": { "name": "Gap (average, extrapolated)" },
+      "distance_to_shadow_track": { "name": "Distance to track" },
+      "elevation": { "name": "Elevation" },
+      "latitude": { "name": "Latitude" },
+      "longitude": { "name": "Longitude" },
+      "current_time": { "name": "Last position time" },
+      "battery": { "name": "Battery" },
+      "last_location_at": { "name": "Last location" },
+      "online": {
+        "name": "Connection",
+        "state": { "connected": "Connected", "disconnected": "Disconnected" }
+      }
+    },
+    "device_tracker": {
+      "tracker": { "name": "Tracker" }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": { "message": "Failed to connect to RaceMap." },
+    "invalid_auth": { "message": "Authentication with RaceMap failed." },
+    "event_not_found": { "message": "The RaceMap event was not found." },
+    "rate_limited": { "message": "The RaceMap API rate limit was exceeded." }
+  }
+}

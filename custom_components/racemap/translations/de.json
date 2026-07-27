@@ -1,0 +1,98 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit RaceMap verbinden",
+        "data": { "token": "API-Token", "event_id": "Event-ID" },
+        "data_description": {
+          "token": "Dein RaceMap API-Token (Kontoeinstellungen \u2192 API Tokens).",
+          "event_id": "Die ID des zu verfolgenden Events."
+        }
+      },
+      "reauth_confirm": {
+        "title": "RaceMap erneut authentifizieren",
+        "description": "Das RaceMap API-Token ist ung\u00fcltig. Bitte gib ein neues Token ein.",
+        "data": { "token": "API-Token" },
+        "data_description": { "token": "Ein neues, g\u00fcltiges RaceMap API-Token." }
+      },
+      "reconfigure": {
+        "title": "RaceMap neu konfigurieren",
+        "data": { "token": "API-Token", "event_id": "Event-ID" },
+        "data_description": {
+          "token": "Dein RaceMap API-Token.",
+          "event_id": "Die ID des zu verfolgenden Events."
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu RaceMap fehlgeschlagen. Bitte erneut versuchen.",
+      "invalid_auth": "Ung\u00fcltiges API-Token.",
+      "event_not_found": "Kein Event f\u00fcr diese Event-ID gefunden.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "abort": {
+      "already_configured": "Dieses Event ist bereits konfiguriert.",
+      "reauth_successful": "Die erneute Authentifizierung war erfolgreich.",
+      "reconfigure_successful": "Die Neukonfiguration war erfolgreich.",
+      "unique_id_mismatch": "Die Event-ID stimmt nicht mit der bestehenden Konfiguration \u00fcberein."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "RaceMap-Optionen",
+        "data": {
+          "update_interval": "Aktualisierungsintervall (Sekunden)",
+          "participants": "Beobachtete Teilnehmer"
+        },
+        "data_description": {
+          "update_interval": "Wie oft RaceMap nach neuen Daten abgefragt wird.",
+          "participants": "Teilnehmer, f\u00fcr die Ger\u00e4te und Entit\u00e4ten erstellt werden."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "event_location": { "name": "Ort" },
+      "start_time": { "name": "Startzeit" },
+      "end_time": { "name": "Endzeit" },
+      "result_time": { "name": "Letzte Aktualisierung" },
+      "participant_count": { "name": "Teilnehmer" },
+      "speed": { "name": "Geschwindigkeit" },
+      "from_start": { "name": "Distanz ab Start" },
+      "from_start_ex": { "name": "Distanz ab Start (extrapoliert)" },
+      "to_finish": { "name": "Distanz bis Ziel" },
+      "to_finish_ex": { "name": "Distanz bis Ziel (extrapoliert)" },
+      "gap_distance": { "name": "R\u00fcckstand (Distanz)" },
+      "gap_distance_ex": { "name": "R\u00fcckstand (Distanz, extrapoliert)" },
+      "eta": { "name": "Voraussichtliche Ankunft" },
+      "gap": { "name": "R\u00fcckstand" },
+      "gap_ex": { "name": "R\u00fcckstand (extrapoliert)" },
+      "gap_chase": { "name": "R\u00fcckstand (Verfolger)" },
+      "gap_chase_ex": { "name": "R\u00fcckstand (Verfolger, extrapoliert)" },
+      "gap_average": { "name": "R\u00fcckstand (Durchschnitt)" },
+      "gap_average_ex": { "name": "R\u00fcckstand (Durchschnitt, extrapoliert)" },
+      "distance_to_shadow_track": { "name": "Distanz zur Strecke" },
+      "elevation": { "name": "H\u00f6he" },
+      "latitude": { "name": "Breitengrad" },
+      "longitude": { "name": "L\u00e4ngengrad" },
+      "current_time": { "name": "Zeit der letzten Position" },
+      "battery": { "name": "Batterie" },
+      "last_location_at": { "name": "Letzte Position" },
+      "online": {
+        "name": "Verbindung",
+        "state": { "connected": "Verbunden", "disconnected": "Getrennt" }
+      }
+    },
+    "device_tracker": {
+      "tracker": { "name": "Tracker" }
+    }
+  },
+  "exceptions": {
+    "cannot_connect": { "message": "Verbindung zu RaceMap fehlgeschlagen." },
+    "invalid_auth": { "message": "Authentifizierung bei RaceMap fehlgeschlagen." },
+    "event_not_found": { "message": "Das RaceMap-Event wurde nicht gefunden." },
+    "rate_limited": { "message": "Das RaceMap API-Limit wurde \u00fcberschritten." }
+  }
+}

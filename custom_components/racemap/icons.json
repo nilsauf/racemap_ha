@@ -1,0 +1,36 @@
+{
+  "entity": {
+    "sensor": {
+      "event_location": { "default": "mdi:map-marker" },
+      "start_time": { "default": "mdi:clock-start" },
+      "end_time": { "default": "mdi:clock-end" },
+      "result_time": { "default": "mdi:update" },
+      "participant_count": { "default": "mdi:account-group" },
+      "speed": { "default": "mdi:speedometer" },
+      "from_start": { "default": "mdi:map-marker-distance" },
+      "from_start_ex": { "default": "mdi:map-marker-distance" },
+      "to_finish": { "default": "mdi:flag-checkered" },
+      "to_finish_ex": { "default": "mdi:flag-checkered" },
+      "gap_distance": { "default": "mdi:map-marker-distance" },
+      "gap_distance_ex": { "default": "mdi:map-marker-distance" },
+      "eta": { "default": "mdi:timer-sand" },
+      "gap": { "default": "mdi:timer-outline" },
+      "gap_ex": { "default": "mdi:timer-outline" },
+      "gap_chase": { "default": "mdi:timer-outline" },
+      "gap_chase_ex": { "default": "mdi:timer-outline" },
+      "gap_average": { "default": "mdi:timer-outline" },
+      "gap_average_ex": { "default": "mdi:timer-outline" },
+      "distance_to_shadow_track": { "default": "mdi:map-marker-distance" },
+      "elevation": { "default": "mdi:elevation-rise" },
+      "current_time": { "default": "mdi:clock-outline" },
+      "last_location_at": { "default": "mdi:map-clock" },
+      "online": {
+        "default": "mdi:lan-connect",
+        "state": {
+          "connected": "mdi:lan-connect",
+          "disconnected": "mdi:lan-disconnect"
+        }
+      }
+    }
+  }
+}
