@@ -8,8 +8,6 @@ from unittest.mock import AsyncMock, MagicMock
 
 import aiohttp
 import pytest
-from aiohttp import ClientSession
-from aioresponses import aioresponses
 
 from custom_components.racemap.api import RaceMapApiClient
 from custom_components.racemap.const import DOMAIN
@@ -77,30 +75,57 @@ class RequestContext:
         self.exited = True
 
 
-@pytest.fixture
-async def client() -> RaceMapApiClient:
-    async with ClientSession() as session:
-        yield RaceMapApiClient(session, "secret-token", EVENT_ID)
+def _make_response(
+    *,
+    status: int,
+    headers: dict[str, str] | None = None,
+    json_result: Any = None,
+    json_side_effect: Exception | None = None,
+) -> MagicMock:
+    """Build a minimal aiohttp-like response mock."""
+    response = MagicMock(status=status, headers=headers or {})
+    if json_side_effect is not None:
+        response.json = AsyncMock(side_effect=json_side_effect)
+    else:
+        response.json = AsyncMock(return_value=json_result)
+    return response
+
+
+def _make_client_with_response(
+    response: MagicMock,
+) -> tuple[RaceMapApiClient, MagicMock]:
+    """Return an API client backed by a stub session and request context."""
+    session = MagicMock()
+    session.get.return_value = RequestContext(response)
+    return RaceMapApiClient(session, "secret-token", EVENT_ID), session
 
 
 async def test_get_current_success(
-    client: RaceMapApiClient, current_json: dict[str, Any]
+    current_json: dict[str, Any]
 ) -> None:
-    with aioresponses() as m:
-        m.get(URL, status=200, payload=current_json)
-        data = await client.async_get_current()
+    client, _session = _make_client_with_response(
+        _make_response(status=200, json_result=current_json)
+    )
+
+    data = await client.async_get_current()
+
     assert data.event.name == current_json["name"]
     assert len(data.participants) == 3
 
 
 async def test_get_current_sends_bearer_token(
-    client: RaceMapApiClient, current_json: dict[str, Any]
+    current_json: dict[str, Any]
 ) -> None:
-    with aioresponses() as m:
-        m.get(URL, status=200, payload=current_json)
-        await client.async_get_current()
-        request = next(iter(m.requests.values()))[0]
-    assert request.kwargs["headers"]["Authorization"] == "Bearer secret-token"
+    client, session = _make_client_with_response(
+        _make_response(status=200, json_result=current_json)
+    )
+
+    await client.async_get_current()
+
+    assert session.get.call_args.kwargs["headers"]["Authorization"] == (
+        "Bearer secret-token"
+    )
+    assert session.get.call_args.args[0] == URL
 
 
 @pytest.mark.parametrize(
@@ -114,19 +139,22 @@ async def test_get_current_sends_bearer_token(
     ],
 )
 async def test_get_current_status_errors(
-    client: RaceMapApiClient, status: int, expected: type[Exception]
+    status: int, expected: type[Exception]
 ) -> None:
-    with aioresponses() as m:
-        m.get(URL, status=status)
-        with pytest.raises(expected):
-            await client.async_get_current()
+    client, _session = _make_client_with_response(_make_response(status=status))
+
+    with pytest.raises(expected):
+        await client.async_get_current()
 
 
-async def test_get_current_rate_limited(client: RaceMapApiClient) -> None:
-    with aioresponses() as m:
-        m.get(URL, status=429, headers={"Retry-After": "42"})
-        with pytest.raises(RaceMapRateLimitError) as err:
-            await client.async_get_current()
+async def test_get_current_rate_limited() -> None:
+    client, _session = _make_client_with_response(
+        _make_response(status=429, headers={"Retry-After": "42"})
+    )
+
+    with pytest.raises(RaceMapRateLimitError) as err:
+        await client.async_get_current()
+
     assert err.value.retry_after == 42.0
 
 
@@ -191,8 +219,10 @@ async def test_get_current_json_client_error_raises_connection_error() -> None:
         await api_client.async_get_current()
 
 
-async def test_get_current_network_error(client: RaceMapApiClient) -> None:
-    with aioresponses() as m:
-        m.get(URL, exception=TimeoutError())
-        with pytest.raises(RaceMapConnectionError):
-            await client.async_get_current()
+async def test_get_current_network_error() -> None:
+    session = MagicMock()
+    session.get.side_effect = TimeoutError()
+    client = RaceMapApiClient(session, "secret-token", EVENT_ID)
+
+    with pytest.raises(RaceMapConnectionError):
+        await client.async_get_current()
