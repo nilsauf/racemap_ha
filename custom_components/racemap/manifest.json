@@ -12,7 +12,7 @@
   "loggers": [
     "custom_components.racemap"
   ],
-  "quality_scale": "silver",
+  "quality_scale": "platinum",
   "requirements": [],
   "version": "0.1.0"
 }
