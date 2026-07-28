@@ -75,3 +75,59 @@ async def test_update_connection_error(
     coordinator = RaceMapDataUpdateCoordinator(hass, entry, client)
     with pytest.raises(UpdateFailed):
         await coordinator._async_update_data()
+
+
+async def test_logs_only_once_while_unavailable(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Repeated connection failures only log the unavailable state once."""
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_current.side_effect = RaceMapConnectionError("down")
+    coordinator = RaceMapDataUpdateCoordinator(hass, entry, client)
+
+    with caplog.at_level("WARNING"):
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+
+    warnings = [
+        record.message
+        for record in caplog.records
+        if record.levelname == "WARNING"
+        and "RaceMap service unavailable" in record.message
+    ]
+    assert warnings == ["RaceMap service unavailable: down"]
+
+
+async def test_logs_when_service_recovers(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+    current_json: dict[str, Any],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A success after failure logs one recovery message."""
+    entry.add_to_hass(hass)
+    client = AsyncMock()
+    client.async_get_current.side_effect = [
+        RaceMapConnectionError("down"),
+        RaceData.parse(current_json),
+    ]
+    coordinator = RaceMapDataUpdateCoordinator(hass, entry, client)
+
+    with caplog.at_level("INFO"):
+        with pytest.raises(UpdateFailed):
+            await coordinator._async_update_data()
+        data = await coordinator._async_update_data()
+
+    assert data.event.name == current_json["name"]
+    infos = [
+        record.message
+        for record in caplog.records
+        if record.levelname == "INFO"
+        and record.message == "RaceMap service is available again"
+    ]
+    assert infos == ["RaceMap service is available again"]
