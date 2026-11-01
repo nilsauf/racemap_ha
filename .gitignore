@@ -7,3 +7,4 @@ __pycache__/
 .coverage
 .superpowers/
 *.egg-info/
+.vscode/
