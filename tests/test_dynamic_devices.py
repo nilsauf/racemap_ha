@@ -21,10 +21,14 @@ from custom_components.racemap.const import (
 from custom_components.racemap.models import RaceData
 
 
-async def test_cleanup_removes_only_the_stale_entry_association(
+async def test_cleanup_removes_only_the_stale_entry_device(
     hass: HomeAssistant, current_json: dict[str, Any]
 ) -> None:
-    """Keep a participant device associated with another selected entry."""
+    """Remove this entry's stale device but keep another entry's same-ID device.
+
+    Devices belong to a single config entry, so two entries tracking the same
+    participant each own a device with the same identifier.
+    """
     participant_0 = current_json["starters"][0]["id"]
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -53,26 +57,38 @@ async def test_cleanup_removes_only_the_stale_entry_association(
     )
     second_entry.add_to_hass(hass)
     participant_identifier = (DOMAIN, f"evt123_{participant_0}")
-    device = registry.async_get_or_create(
+    stale_device = registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={participant_identifier},
         name="Participant",
     )
-    registry.async_update_device(device.id, add_config_entry_id=second_entry.entry_id)
+    other_device = registry.async_get_or_create(
+        config_entry_id=second_entry.entry_id,
+        identifiers={participant_identifier},
+        name="Participant",
+    )
+    assert stale_device.id != other_device.id, "devices must be per config entry"
 
     entry.runtime_data.async_set_updated_data(data)
     await hass.async_block_till_done()
 
-    device = registry.async_get(device.id)
-    assert device is not None, "participant device is missing"
-    assert entry.entry_id not in device.config_entries
-    assert second_entry.entry_id in device.config_entries
+    assert registry.async_get(stale_device.id) is None, "stale device still exists"
+    assert (
+        registry.async_get_device_by_identifier(participant_identifier, entry.entry_id)
+        is None
+    ), "stale device is still registered for the entry"
+    kept = registry.async_get_device_by_identifier(
+        participant_identifier, second_entry.entry_id
+    )
+    assert kept is not None, "other entry's participant device is missing"
+    assert kept.id == other_device.id
+    assert kept.config_entry_id == second_entry.entry_id
 
 
 async def test_cleanup_removes_roster_departures_only_for_current_event(
     hass: HomeAssistant, current_json: dict[str, Any]
 ) -> None:
-    """Remove stale participant association while keeping unrelated devices."""
+    """Remove a departed participant device while keeping unrelated devices."""
     participant_id = current_json["starters"][0]["id"]
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -104,24 +120,32 @@ async def test_cleanup_removes_roster_departures_only_for_current_event(
         if participant["id"] != participant_id
     ]
 
-    dev_event = registry.async_get_device(identifiers={(DOMAIN, entry.entry_id)})
-    dev_participant = registry.async_get_device(
-        identifiers={(DOMAIN, f"evt123_{participant_id}")}
+    event_identifier = (DOMAIN, entry.entry_id)
+    participant_identifier = (DOMAIN, f"evt123_{participant_id}")
+    dev_event = registry.async_get_device_by_identifier(
+        event_identifier, entry.entry_id
+    )
+    dev_participant = registry.async_get_device_by_identifier(
+        participant_identifier, entry.entry_id
     )
 
     assert dev_event is not None, "dev_event is None"
     assert dev_participant is not None, "dev_participant is None"
+    assert dev_participant.via_device_id == dev_event.id, (
+        "participant device is not linked to the event device"
+    )
 
     entry.runtime_data.async_set_updated_data(RaceData.parse(stale_data))
     await hass.async_block_till_done()
 
-    assert (
-        registry.async_get_device(identifiers={(DOMAIN, f"evt123_{participant_id}")})
-        is None
-    ), "participant device still has the stale entry association"
-    assert registry.async_get_device({(DOMAIN, entry.entry_id)}) is not None, (
-        "event device is missing"
+    assert registry.async_get(dev_participant.id) is None, (
+        "stale participant device still exists"
     )
-    assert registry.async_get_device(foreign_device.identifiers) is not None, (
+    assert (
+        registry.async_get_device_by_identifier(participant_identifier, entry.entry_id)
+        is None
+    ), "stale participant device is still registered for the entry"
+    assert registry.async_get(dev_event.id) is not None, "event device is missing"
+    assert registry.async_get(foreign_device.id) is not None, (
         "foreign device is missing"
     )

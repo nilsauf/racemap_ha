@@ -100,9 +100,7 @@ def _make_client_with_response(
     return RaceMapApiClient(session, "secret-token", EVENT_ID), session
 
 
-async def test_get_current_success(
-    current_json: dict[str, Any]
-) -> None:
+async def test_get_current_success(current_json: dict[str, Any]) -> None:
     client, _session = _make_client_with_response(
         _make_response(status=200, json_result=current_json)
     )
@@ -113,9 +111,7 @@ async def test_get_current_success(
     assert len(data.participants) == 3
 
 
-async def test_get_current_sends_bearer_token(
-    current_json: dict[str, Any]
-) -> None:
+async def test_get_current_sends_bearer_token(current_json: dict[str, Any]) -> None:
     client, session = _make_client_with_response(
         _make_response(status=200, json_result=current_json)
     )

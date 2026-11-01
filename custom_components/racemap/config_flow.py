@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import voluptuous as vol
+import probatio
 from homeassistant.config_entries import (
     ConfigFlow,
     ConfigFlowResult,
@@ -98,10 +98,10 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(CONF_TOKEN): TOKEN_SELECTOR,
-                    vol.Required(CONF_EVENT_ID): str,
+                    probatio.Required(CONF_TOKEN): TOKEN_SELECTOR,
+                    probatio.Required(CONF_EVENT_ID): str,
                 }
             ),
             errors=errors,
@@ -134,7 +134,9 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema({vol.Required(CONF_TOKEN): TOKEN_SELECTOR}),
+            data_schema=probatio.Schema(
+                {probatio.Required(CONF_TOKEN): TOKEN_SELECTOR}
+            ),
             errors=errors,
         )
 
@@ -159,12 +161,14 @@ class RaceMapConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=vol.Schema(
+            data_schema=probatio.Schema(
                 {
-                    vol.Required(
+                    probatio.Required(
                         CONF_TOKEN, default=entry.data[CONF_TOKEN]
                     ): TOKEN_SELECTOR,
-                    vol.Required(CONF_EVENT_ID, default=entry.data[CONF_EVENT_ID]): str,
+                    probatio.Required(
+                        CONF_EVENT_ID, default=entry.data[CONF_EVENT_ID]
+                    ): str,
                 }
             ),
             errors=errors,
@@ -211,9 +215,9 @@ class RaceMapOptionsFlow(OptionsFlowWithReload):
                 for pid in self.config_entry.options.get(CONF_PARTICIPANTS, [])
             ]
 
-        schema = vol.Schema(
+        schema = probatio.Schema(
             {
-                vol.Required(
+                probatio.Required(
                     CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL
                 ): NumberSelector(
                     NumberSelectorConfig(
@@ -224,7 +228,7 @@ class RaceMapOptionsFlow(OptionsFlowWithReload):
                         unit_of_measurement="s",
                     )
                 ),
-                vol.Optional(CONF_PARTICIPANTS, default=[]): SelectSelector(
+                probatio.Optional(CONF_PARTICIPANTS, default=[]): SelectSelector(
                     SelectSelectorConfig(
                         options=options,
                         multiple=True,

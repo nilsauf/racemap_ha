@@ -321,7 +321,7 @@ def selected_participants(
 def _cleanup_stale_devices(
     hass: HomeAssistant, entry: RaceMapConfigEntry, data: RaceData
 ) -> None:
-    """Remove this entry's stale participant device associations."""
+    """Remove this entry's stale participant devices."""
     event_id = entry.data[CONF_EVENT_ID]
     selected_ids = set(entry.options.get(CONF_PARTICIPANTS, []))
     retained = {
@@ -336,10 +336,7 @@ def _cleanup_stale_devices(
             if identifier[0] == DOMAIN and identifier[1].startswith(f"{event_id}_")
         }
         if participant_identifiers and not participant_identifiers & retained:
-            registry.async_update_device(
-                device.id,
-                remove_config_entry_id=entry.entry_id,
-            )
+            registry.async_remove_device(device.id)
 
 
 async def async_setup_entry(
@@ -444,7 +441,9 @@ class RaceMapParticipantSensor(RaceMapEntity, SensorEntity):
         event_id = entry.data[CONF_EVENT_ID]
         self._attr_unique_id = f"{event_id}_{participant_id}_{description.key}"
         participant = coordinator.data.participants_by_id[participant_id]
-        self._attr_device_info = participant_device_info(entry, participant)
+        self._attr_device_info = participant_device_info(
+            coordinator.hass, entry, participant
+        )
 
     @property
     def _participant(self) -> Participant | None:

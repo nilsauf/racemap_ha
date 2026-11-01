@@ -5,11 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import RaceMapApiClient
 from .const import CONF_EVENT_ID, CONF_TOKEN
 from .coordinator import RaceMapDataUpdateCoordinator
+from .entity import event_device_info
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -28,6 +30,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: RaceMapConfigEntry) -> b
     coordinator = RaceMapDataUpdateCoordinator(hass, entry, client)
     await coordinator.async_config_entry_first_refresh()
     entry.runtime_data = coordinator
+    # Register the event device up front so participant devices on every
+    # platform can link to it through via_device_id.
+    dr.async_get(hass).async_get_or_create(
+        config_entry_id=entry.entry_id,
+        **event_device_info(entry, coordinator.data.event),
+    )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 

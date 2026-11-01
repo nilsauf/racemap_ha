@@ -80,9 +80,7 @@ class RaceMapDataUpdateCoordinator(DataUpdateCoordinator[RaceData]):
                 retry_after=err.retry_after,
             ) from err
         except RaceMapError as err:
-            self._mark_service_unavailable(
-                "RaceMap service unavailable: %s", err
-            )
+            self._mark_service_unavailable("RaceMap service unavailable: %s", err)
             raise UpdateFailed(
                 translation_domain=DOMAIN,
                 translation_key="cannot_connect",

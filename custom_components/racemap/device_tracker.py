@@ -73,7 +73,7 @@ class RaceMapDeviceTracker(RaceMapEntity, TrackerEntity):
         # BaseTrackerEntity narrows _attr_device_info to None, but a RaceMap
         # tracker belongs to its participant device, so we override the type.
         self._attr_device_info = participant_device_info(  # type: ignore[assignment]
-            entry, participant
+            coordinator.hass, entry, participant
         )
 
     @property
