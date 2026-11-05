@@ -1,5 +1,5 @@
 [tool.ruff]
-target-version = "py313"
+target-version = "py314"
 line-length = 88
 
 [tool.ruff.lint]
@@ -17,7 +17,8 @@ ignore = [
 "tests/*" = ["S101", "ANN", "D", "SLF001", "PLR2004"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
+files = ["custom_components/racemap"]
 strict = true
 warn_unused_ignores = true
 disallow_any_generics = true

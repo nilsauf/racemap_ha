@@ -70,7 +70,7 @@ class RaceMapApiClient:
                             retry_after_seconds = (
                                 float(retry_after) if retry_after else None
                             )
-                        except (TypeError, ValueError):
+                        except TypeError, ValueError:
                             retry_after_seconds = None
                         if retry_after_seconds is not None and (
                             not math.isfinite(retry_after_seconds)

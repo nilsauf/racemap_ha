@@ -67,7 +67,7 @@ async def _validate(
         return None, "invalid_auth"
     except RaceMapEventNotFoundError:
         return None, "event_not_found"
-    except (RaceMapConnectionError, RaceMapRateLimitError):
+    except RaceMapConnectionError, RaceMapRateLimitError:
         return None, "cannot_connect"
     except RaceMapError:
         return None, "cannot_connect"

@@ -23,7 +23,7 @@ def _f(value: object) -> float | None:
         return None
     try:
         return float(value)  # type: ignore[arg-type]
-    except (TypeError, ValueError):
+    except TypeError, ValueError:
         return None
 
 
@@ -197,7 +197,7 @@ class RaceData:
         for raw in payload.get("starters") or []:
             try:
                 participants.append(Participant.parse(raw))
-            except (KeyError, TypeError, ValueError):
+            except KeyError, TypeError, ValueError:
                 LOGGER.warning("Skipping malformed participant entry")
         return cls(
             event=EventInfo.parse(payload),
