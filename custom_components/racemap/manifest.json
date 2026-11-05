@@ -1,6 +1,10 @@
 {
   "domain": "racemap",
   "name": "RaceMap",
+  "categories": [
+    "presence_location.trackers",
+    "health_wellbeing"
+  ],
   "codeowners": [
     "@nilsauf"
   ],
