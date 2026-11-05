@@ -107,6 +107,7 @@ async def test_reauth_success(
         result = await hass.config_entries.flow.async_configure(
             result["flow_id"], {CONF_TOKEN: "newtoken"}
         )
+        await hass.async_block_till_done()
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
     assert entry.data[CONF_TOKEN] == "newtoken"
@@ -123,6 +124,7 @@ async def test_reconfigure_success(
             result["flow_id"],
             {CONF_TOKEN: "t2", CONF_EVENT_ID: "evt123"},
         )
+        await hass.async_block_till_done()
     assert result["type"] is FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
     assert entry.data[CONF_TOKEN] == "t2"
