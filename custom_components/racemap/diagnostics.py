@@ -14,7 +14,18 @@ if TYPE_CHECKING:
 
     from .coordinator import RaceMapConfigEntry
 
-TO_REDACT = {CONF_TOKEN, "Authorization"}
+TO_REDACT = {
+    CONF_TOKEN,
+    "Authorization",
+    # Participant personal data: names, live GPS positions, tracker ids, tags.
+    # "name" also redacts the event name, which is acceptable.
+    "name",
+    "lat",
+    "lng",
+    "external_id",
+    "device_id",
+    "tags",
+}
 
 
 async def async_get_config_entry_diagnostics(
@@ -28,8 +39,13 @@ async def async_get_config_entry_diagnostics(
             "data": async_redact_data(dict(entry.data), TO_REDACT),
             "options": dict(entry.options),
         },
-        "data": {
-            "event": asdict(data.event),
-            "participants": [asdict(participant) for participant in data.participants],
-        },
+        "data": async_redact_data(
+            {
+                "event": asdict(data.event),
+                "participants": [
+                    asdict(participant) for participant in data.participants
+                ],
+            },
+            TO_REDACT,
+        ),
     }

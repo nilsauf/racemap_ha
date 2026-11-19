@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from unittest.mock import patch
 
+from homeassistant.components.diagnostics import REDACTED
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 if TYPE_CHECKING:
@@ -15,10 +16,10 @@ from custom_components.racemap.diagnostics import async_get_config_entry_diagnos
 from custom_components.racemap.models import RaceData
 
 
-async def test_diagnostics_redacts_token(
+async def test_diagnostics_redacts_token_and_personal_data(
     hass: HomeAssistant, current_json: dict[str, Any]
 ) -> None:
-    """Diagnostics redact credentials and expose coordinator data."""
+    """Diagnostics redact credentials and participant personal data."""
     entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="evt123",
@@ -37,5 +38,15 @@ async def test_diagnostics_redacts_token(
     result = await async_get_config_entry_diagnostics(hass, entry)
 
     assert result["entry"]["data"][CONF_TOKEN] != "super-secret"
-    assert result["data"]["event"]["name"] == current_json["name"]
-    assert len(result["data"]["participants"]) == 3
+    assert result["data"]["event"]["name"] == REDACTED
+    participants = result["data"]["participants"]
+    assert len(participants) == 3
+    for participant in participants:
+        assert participant["name"] == REDACTED
+        assert participant["tags"] == REDACTED
+        if participant["current"] is not None:
+            assert participant["current"]["lat"] == REDACTED
+            assert participant["current"]["lng"] == REDACTED
+        if participant["device"] is not None:
+            assert participant["device"]["external_id"] == REDACTED
+            assert participant["device"]["device_id"] == REDACTED
