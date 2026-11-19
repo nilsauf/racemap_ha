@@ -29,11 +29,33 @@ RaceMap `/current` endpoint at your configured interval.
 
 ## Installation
 
-### HACS
+### Marketplace (Home Assistant 2026.11 and later)
 
-1. Add this repository as a custom repository in HACS with the **Integration**
-   category.
-2. Install **RaceMap** from HACS.
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=nilsauf&repository=racemap_ha&category=integration)
+
+From Home Assistant 2026.11, HACS is built into Home Assistant as the
+Marketplace. RaceMap is available in the Marketplace catalog.
+
+1. Open **Settings > Marketplace** and search for **RaceMap**, or use the
+   button above.
+2. If this is your first time using the Marketplace, read and accept the
+   notice.
+3. Select **RaceMap** and choose **Install**.
+4. Add **RaceMap** from **Settings > Devices & services > Add integration**
+   if setup does not start automatically.
+
+If you installed RaceMap through HACS before, Home Assistant moves it into the
+Marketplace when you upgrade to 2026.11; you do not need to reinstall.
+
+### HACS (Home Assistant 2026.10)
+
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=nilsauf&repository=racemap_ha&category=integration)
+
+RaceMap is part of the HACS default repositories, so you do not need to add it
+as a custom repository.
+
+1. Open **HACS**, search for **RaceMap**, or use the button above.
+2. Select **Download**.
 3. Restart Home Assistant.
 4. Add **RaceMap** from **Settings > Devices & services > Add integration**.
 
@@ -155,5 +177,7 @@ reference the device.
 ## Removal
 
 Remove the RaceMap integration entry from **Settings > Devices & services**,
-then restart Home Assistant if entities remain displayed. For a manual install,
-remove `custom_components/racemap` from the configuration directory as well.
+then restart Home Assistant if entities remain displayed. To remove the files,
+uninstall RaceMap from **Settings > Marketplace** (or **HACS** on 2026.10), or,
+for a manual install, delete `custom_components/racemap` from the configuration
+directory.
